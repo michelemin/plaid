@@ -40,8 +40,13 @@ pub struct Message {
     /// The data passed to the module
     pub data: Vec<u8>,
     /// Any additional data that is provided as context to the module
-    /// This is usually either headers, or secrets
     pub accessory_data: HashMap<String, Vec<u8>>,
+    /// Any secrets the module will have access to, while processing this message
+    pub secrets: HashMap<String, Vec<u8>>,
+    /// Any headers the module will have access to, while processing this message
+    pub headers: HashMap<String, Vec<u8>>,
+    /// Any query parameters the module will have access to, while processing this message
+    pub query_params: HashMap<String, Vec<u8>>,
     /// Where the message came from
     pub source: LogSource,
     /// If this message is allowed to trigger additional messages to the same
@@ -69,6 +74,9 @@ impl Message {
             type_,
             data,
             accessory_data: HashMap::new(),
+            secrets: HashMap::new(),
+            headers: HashMap::new(),
+            query_params: HashMap::new(),
             source,
             logbacks_allowed,
             response_sender: None,
@@ -83,6 +91,9 @@ impl Message {
             type_: self.type_.clone(),
             data: self.data.clone(),
             accessory_data: self.accessory_data.clone(),
+            secrets: self.secrets.clone(),
+            headers: self.headers.clone(),
+            query_params: self.query_params.clone(),
             source: self.source.clone(),
             logbacks_allowed: self.logbacks_allowed.clone(),
             response_sender: None,
@@ -221,11 +232,9 @@ fn prepare_for_execution(
     // for this message only.
     let mut store = Store::new(plaid_module.engine.clone());
 
-    // Load the secrets if they exist. This overwrites any thing that is already
-    // in the accessory data meaning secrets always take precedence over possible user
-    // provided data, like headers (the other major use case for accessory data)
+    // Load the secrets if they exist.
     if let Some(secrets) = &plaid_module.secrets {
-        message.accessory_data.extend(secrets.clone());
+        message.secrets.extend(secrets.clone());
     }
 
     let env = Env {
