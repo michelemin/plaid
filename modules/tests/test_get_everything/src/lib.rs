@@ -19,6 +19,14 @@ fn handle_post() -> Result<Option<String>, i32> {
     let header = plaid::get_headers("my_secret").unwrap();
     assert_eq!(header.as_str(), "Secret from a header");
 
+    // get accessory data which was set as a mix of universal and per-rule accessory data
+    let value_1 = plaid::get_accessory_data("key_1").unwrap();
+    assert_eq!(value_1, "value_1_new");
+    let value_2 = plaid::get_accessory_data("key_2").unwrap();
+    assert_eq!(value_2, "value_2");
+    let value_3 = plaid::get_accessory_data("key_3").unwrap();
+    assert_eq!(value_3, "value_3");
+
     // All good
     make_named_request("test-response", "OK", HashMap::new()).unwrap();
     Ok(None)

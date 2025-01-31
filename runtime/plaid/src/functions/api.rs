@@ -356,12 +356,12 @@ pub fn to_api_function(
         "get_accessory_data" => Function::new_typed_with_env(
             &mut store,
             &env,
-            super::message::get_accessory_data,
+            super::runtime_data::get_accessory_data,
         ),
         "get_secrets" => Function::new_typed_with_env(
             &mut store,
             &env,
-            super::secrets::get_secrets,
+            super::runtime_data::get_secrets,
         ),
         "get_headers" => Function::new_typed_with_env(
             &mut store,

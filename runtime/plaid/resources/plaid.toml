@@ -29,6 +29,14 @@ lru_cache_size = 200
 "test_mnr.wasm" = 1024
 "test_get_everything.wasm" = 1024
 
+[loading.universal_accessory_data]
+"key_1" = "value_1"
+"key_2" = "value_2"
+
+[loading.accessory_data_overrides."test_get_everything.wasm"]
+"key_1" = "value_1_new"
+"key_3" = "value_3"
+
 [loading.secrets]
 [loading.secrets."testing"]
 "test_secret" = "{plaid-secret{test-secret}}"

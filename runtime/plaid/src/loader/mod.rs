@@ -39,7 +39,7 @@ pub struct LimitedAmount {
 /// two cases:
 /// * "Unlimited"
 /// * { Limited = value }
-/// 
+///
 /// E.g.,
 /// ```
 /// [loading.storage_size]
@@ -99,8 +99,14 @@ pub struct Configuration {
     /// The secrets that are available to modules. No actual secrets should be included in this map.
     /// Instead, the values here should be names of secrets whose values are present in
     /// the secrets file. This makes it possible for to check in your Plaid config without exposing secrets.
-    /// The mapping is `log_type -> {secret_name -> secret_value}`.
+    /// The mapping is `{log_type -> {secret_name -> secret_value}}`.
     pub secrets: HashMap<String, HashMap<String, String>>,
+    /// Accessory data which is available to all rules (unless overridden by the dedicated override config).
+    /// The mapping is `{key -> value}``
+    pub universal_accessory_data: Option<HashMap<String, String>>,
+    /// Per-rule accessory data that overrides universal accessory data.
+    /// The mapping is `{rule_file_name -> {key -> value}}`
+    pub accessory_data_overrides: HashMap<String, HashMap<String, String>>,
     /// See persistent_response_size in PlaidModule for an explanation on how to use this
     pub persistent_response_size: HashMap<String, usize>,
 }
@@ -155,6 +161,8 @@ pub struct PlaidModule {
     pub storage_current: Arc<RwLock<u64>>,
     /// The maximum number of bytes the module can save in persistent storage
     pub storage_limit: LimitValue,
+    /// Any additional data the module is given at loading time
+    pub accessory_data: Option<HashMap<String, Vec<u8>>>,
     /// Any defined secrets the module is allowed to access
     pub secrets: Option<HashMap<String, Vec<u8>>>,
     /// An LRU cache for the module if the runtime has allowed LRU caches for modules
@@ -242,6 +250,7 @@ impl PlaidModule {
             storage_current,
             storage_limit,
             page_limit,
+            accessory_data: None,
             secrets: None,
             cache: None,
             persistent_response: None,
@@ -366,7 +375,28 @@ pub async fn load(
         plaid_module.cache = cache;
         plaid_module.persistent_response = persistent_response;
         plaid_module.secrets = byte_secrets.get(&type_).map(|x| x.clone());
-        // TODO set accessory data for the module
+        // If we have some universal accessory data, then we set it...
+        plaid_module.accessory_data = match config.universal_accessory_data {
+            Some(ref uad) => Some(
+                uad.iter()
+                    .map(|v| (v.0.to_string(), v.1.as_bytes().to_vec()))
+                    .collect(),
+            ),
+            None => None,
+        };
+        // ... then we add those which are specified in the per-rule accessory data, overwriting those with the same name.
+        // prad = per-rule accessory data
+        if let Some(prad) = config.accessory_data_overrides.get(&plaid_module.name) {
+            // If we already had accessory data, start from there. Otherwise, start from an empty map
+            let mut accessory_data = match plaid_module.accessory_data {
+                Some(ref v) => v.clone(),
+                None => HashMap::new(),
+            };
+            for (key, value) in prad {
+                accessory_data.insert(key.to_string(), value.as_bytes().to_vec());
+            }
+            plaid_module.accessory_data = Some(accessory_data);
+        }
 
         // Put it in an Arc because we're going to have multiple references to it
         let plaid_module = Arc::new(plaid_module);
