@@ -384,7 +384,7 @@ pub async fn load(
             ),
             None => None,
         };
-        // ... then we add those which are specified in the per-rule accessory data, overwriting those with the same name.
+        // ... then we add entries which are specified in the per-rule accessory data, overwriting those with the same name.
         // prad = per-rule accessory data
         if let Some(prad) = config.accessory_data_overrides.get(&plaid_module.name) {
             // If we already had accessory data, start from there. Otherwise, start from an empty map
