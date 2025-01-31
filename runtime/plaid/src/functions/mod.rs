@@ -4,6 +4,7 @@ mod internal;
 mod memory;
 mod message;
 mod response;
+mod secrets;
 mod storage;
 
 use memory::*;

@@ -361,7 +361,7 @@ pub fn to_api_function(
         "get_secrets" => Function::new_typed_with_env(
             &mut store,
             &env,
-            super::message::get_secrets,
+            super::secrets::get_secrets,
         ),
         "get_headers" => Function::new_typed_with_env(
             &mut store,

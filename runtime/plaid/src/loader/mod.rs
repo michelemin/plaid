@@ -366,6 +366,7 @@ pub async fn load(
         plaid_module.cache = cache;
         plaid_module.persistent_response = persistent_response;
         plaid_module.secrets = byte_secrets.get(&type_).map(|x| x.clone());
+        // TODO set accessory data for the module
 
         // Put it in an Arc because we're going to have multiple references to it
         let plaid_module = Arc::new(plaid_module);

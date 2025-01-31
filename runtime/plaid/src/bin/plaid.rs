@@ -261,7 +261,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     type_: name.to_string(),
                                     data: String::new().into_bytes(),
                                     accessory_data: HashMap::new(),
-                                    secrets: HashMap::new(),
                                     headers: HashMap::new(),
                                     query_params: query.into_iter().map(|(k, v)| (k, v.into_bytes())).collect(),
                                     source,

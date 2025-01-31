@@ -41,8 +41,6 @@ pub struct Message {
     pub data: Vec<u8>,
     /// Any additional data that is provided as context to the module
     pub accessory_data: HashMap<String, Vec<u8>>,
-    /// Any secrets the module will have access to, while processing this message
-    pub secrets: HashMap<String, Vec<u8>>,
     /// Any headers the module will have access to, while processing this message
     pub headers: HashMap<String, Vec<u8>>,
     /// Any query parameters the module will have access to, while processing this message
@@ -74,7 +72,6 @@ impl Message {
             type_,
             data,
             accessory_data: HashMap::new(),
-            secrets: HashMap::new(),
             headers: HashMap::new(),
             query_params: HashMap::new(),
             source,
@@ -91,7 +88,6 @@ impl Message {
             type_: self.type_.clone(),
             data: self.data.clone(),
             accessory_data: self.accessory_data.clone(),
-            secrets: self.secrets.clone(),
             headers: self.headers.clone(),
             query_params: self.query_params.clone(),
             source: self.source.clone(),
@@ -217,7 +213,7 @@ impl From<LoggingError> for ExecutorError {
 /// Take a message, a module, and an executor and get an instance back that is ready to run
 /// the provided module.
 fn prepare_for_execution(
-    mut message: Message,
+    message: Message,
     plaid_module: Arc<PlaidModule>,
     api: Arc<Api>,
     storage: Option<Arc<Storage>>,
@@ -231,11 +227,6 @@ fn prepare_for_execution(
     // Create the store we're going to use to execute the module
     // for this message only.
     let mut store = Store::new(plaid_module.engine.clone());
-
-    // Load the secrets if they exist.
-    if let Some(secrets) = &plaid_module.secrets {
-        message.secrets.extend(secrets.clone());
-    }
 
     let env = Env {
         module: plaid_module.clone(),
